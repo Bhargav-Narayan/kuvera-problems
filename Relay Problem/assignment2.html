@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>swmming</title>
+</head>
+<style>
+.T {
+    width: 120px;
+}
+
+.N {
+    width: 190px;
+}
+
+td,
+th {
+    padding: 0;
+}
+
+#calculate {
+    display: none;
+}
+</style>
+
+<body>
+    <h1>swmming</h1> number of swmiers:
+    <input type="number" id="number" name="number" value="" placeholder="">
+    <br>
+    <button id='showInputTable'>submit</button>
+    <table border='1px'>
+        <thead>
+            <tr>
+                <th height="30" width="200">Name</th>
+                <th height="30" width="500" colspan="4">timings</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    <div class="res"></div>
+    <button id='calculate'>calculate</button>
+</body>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+<script>
+function findMin(minArray, nameArray, b) {
+    var min = minArray[0];
+    var name = nameArray[0];
+    var a = 0;
+    // console.log(nameArray);
+    for (var i = 0; i < minArray.length; i++)
+        if (min > minArray[i]) {
+            min = minArray[i];
+            name = nameArray[i];
+            a = i;
+        }
+    return {
+        min: min,
+        name: name,
+        index: [a, b],
+        check: false
+    };
+}
+
+
+function findMinWithIndex(minArray, nameArray, b, indx) {
+    var min = 999;
+    var name = nameArray[0];
+    var a = 0;
+    // console.log(nameArray);
+    for (var i = 0; i < minArray.length; i++)
+        if (min > minArray[i] && i !== indx) {
+            min = minArray[i];
+            name = nameArray[i];
+            a = i;
+        }
+    return {
+        min: min,
+        name: name,
+        index: [a, b],
+        check: false
+    };
+}
+
+$('#showInputTable').on('click', function() {
+    if (Number($('#number').val()) < 4 || Number($('#number').val()) === 'NaN' || $('#number').val() === '')
+        alert('number should be greater than or 4');
+    else {
+        var N = Number($('#number').val());
+        var backStroke = [];
+        var breastStroke = [];
+        var butterflyStroke = [];
+        var freestyleStroke = [];
+        var bestTimes = [];
+        var tBody = '';
+        var originalName = [];
+        var matrix = new Array();
+        var swim = [];
+        var time = 0;
+        var finalName = [];
+
+        for (var i = 1, j = 1; i <= N; i++, j = 1) {
+            tBody += '<tr><td height="20" width="200"><input class="N" type="text" id=name' + i + '></td><td height="20" width="100"><input type="text" class="T" id=' + "T" + i + j++ + '></td><td height="20" width="100"><input type="text" class="T" id=' + "T" + i + j++ + '></td><td height="20" width="100"><input type="text" class="T" id=' + "T" + i + j++ + '></td><td height="20" width="100"><input type="text" class="T" id=' + "T" + i + j++ + '></td></tr>';
+        }
+
+        $('tbody').html(tBody);
+        $('#calculate').css('display', 'block');
+        // $('#T'+N+'4').on('click',function(){
+
+
+        $('#calculate').on('click', function() {
+
+            for (var i = 1; i <= N; i++) {
+                matrix.push([Number($('#T' + i + '1').val()), Number($('#T' + i + '2').val()), Number($('#T' + i + '3').val()), Number($('#T' + i + '4').val())]);
+            }
+
+
+
+            for (var j = 0; j < N; j++) {
+                backStroke.push(matrix[j][0]);
+                breastStroke.push(matrix[j][1]);
+                butterflyStroke.push(matrix[j][2]);
+                freestyleStroke.push(matrix[j][3]);
+            }
+
+            for (var j = 1; j <= N; j++) {
+                originalName[j] = $('#name' + j).val();
+            }
+            originalName.shift();
+
+
+            swim.push(backStroke);
+            swim.push(breastStroke);
+            swim.push(butterflyStroke);
+            swim.push(freestyleStroke);
+
+            for (var i = 0; i < 4; i++)
+                bestTimes.push(findMin(swim[i], originalName, i));
+
+            for (var i = 0; i < 4; i++)
+                console.log(bestTimes[i]);
+
+            again:
+            console.log('repeat');
+            for (var i = 0; i < 4; i++) {
+                for (var j = 0; j < 4; j++) {
+                    if (i !== j) {
+                        if (bestTimes[i].name === bestTimes[j].name) {
+
+                            // alert('names are same:'+bestTimes[i].name+' i:'+i+' j:'+j);
+
+                            newStroke1 = findMinWithIndex(swim[i], originalName, i, bestTimes[i].index[0]);
+
+
+                            newStroke2 = findMinWithIndex(swim[j], originalName, j, bestTimes[j].index[0]);
+
+                            var total1 = 0,
+                                total2 = 0;
+
+                            total1 = newStroke1.min;
+                            // console.log('total1:'+total1)
+                            for (var t = 0; t < 4; t++)
+                                if (i !== t)
+                                    total1 += bestTimes[t].min;
+
+                            total2 = newStroke2.min;
+                            // console.log('total2:'+total2)
+                            for (var t = 0; t < 4; t++)
+                                if (j !== t)
+                                    total2 += bestTimes[t].min;
+
+                                console.log('result'+i+':'+total1+', '+total2);
+
+                            if (total1 < total2) {
+                                // bestTimes[j].check = true;
+                                bestTimes[i] = newStroke1;
+                                // goto again;
+                            } else {
+                                // bestTimes[i].check = true;
+                                bestTimes[j] = newStroke2;
+                                // goto again;
+                            }
+
+                            for (var l = 0; l < 4; l++){
+                            	console.log('new:'+l);
+                            	console.log(bestTimes[l]);
+                            }
+
+                            
+                        }
+                    }
+                }
+
+            }
+
+            for (var l = 0; l < 4; l++) {
+                console.log('final')
+                console.log(bestTimes[l]);
+                time += bestTimes[l].min;
+                finalName.push(bestTimes[l].name);
+            }
+
+
+            console.log('time:' + time + ' names:' + finalName);
+            var result = "<p>time:" + time + " names:" + finalName + "</p>";
+            $('.res').append(result);
+        });
+
+        // });
+
+
+    }
+
+});
+</script>
+
+</html>
